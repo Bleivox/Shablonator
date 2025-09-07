@@ -1,0 +1,75 @@
+# macOS мусор
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Общие временные/мердж-артефакты
+*.swp
+*.lock
+*.orig
+*.rej
+*~
+
+# Xcode: кеши, локальные настройки
+build/
+DerivedData/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+*.xcuserstate
+
+# Старые/локальные файлы проекта Xcode (не нужны в VCS)
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xccheckout
+*.xcscmblueprint
+
+# Пользовательские данные рабочего пространства/проекта
+xcuserdata/
+project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# Playgrounds
+timeline.xctimeline
+
+# Swift Package Manager (локальные метаданные и сборки)
+.swiftpm/
+.build/
+
+# CocoaPods
+# По умолчанию Pods НЕ коммитим — раскомментируй строку ниже, если придерживаешься этой стратегии:
+# Pods/
+# Всегда коммить: Podfile, Podfile.lock (по умолчанию git их не игнорирует)
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+# Cartfile и Cartfile.resolved оставляем под версионирование
+
+# Fastlane (артефакты)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# IDE прочее
+.idea/
+.vscode/
+*.iml
+
+# Симуляторные логи/покрытие (обычно лежит в DerivedData, но на всякий случай)
+*.xccoverage
+

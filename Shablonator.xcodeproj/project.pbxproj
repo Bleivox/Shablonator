@@ -6,8 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D89E8DD92E69A66B0032AA6A /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = D89E8DD82E69A66B0032AA6A /* SnapKit */; };
+		D89E8DDB2E69A68E0032AA6A /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = D89E8DDA2E69A68E0032AA6A /* .gitignore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		D8170C092DFDA6F10057593E /* Shablonator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shablonator.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D89E8DDA2E69A68E0032AA6A /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -36,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D89E8DD92E69A66B0032AA6A /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +52,7 @@
 		D8170C002DFDA6F10057593E = {
 			isa = PBXGroup;
 			children = (
+				D89E8DDA2E69A68E0032AA6A /* .gitignore */,
 				D8170C0B2DFDA6F10057593E /* Shablonator */,
 				D8170C0A2DFDA6F10057593E /* Products */,
 			);
@@ -78,6 +86,7 @@
 			);
 			name = Shablonator;
 			packageProductDependencies = (
+				D89E8DD82E69A66B0032AA6A /* SnapKit */,
 			);
 			productName = Shablonator;
 			productReference = D8170C092DFDA6F10057593E /* Shablonator.app */;
@@ -107,6 +116,9 @@
 			);
 			mainGroup = D8170C002DFDA6F10057593E;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D89E8DD72E69A66B0032AA6A /* XCRemoteSwiftPackageReference "SnapKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D8170C0A2DFDA6F10057593E /* Products */;
 			projectDirPath = "";
@@ -122,6 +134,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D89E8DDB2E69A68E0032AA6A /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,6 +350,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D89E8DD72E69A66B0032AA6A /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D89E8DD82E69A66B0032AA6A /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D89E8DD72E69A66B0032AA6A /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D8170C012DFDA6F10057593E /* Project object */;
 }
