@@ -12,67 +12,27 @@ final class TabsViewController: UIViewController {
     // UI
     private let header = UIView()
     private let titleLabel = UILabel()
-    private lazy var tabs = UnderlineTabsView(items: [
-        .init(title: "Шаблоны"),
-        .init(title: "Шаги")
-    ])
+    private let tabs: [Tab] = [
+            .init(title: "Шаблоны", builder: { TemplatesViewController() }),
+            .init(title: "Шаги",     builder: { StepsViewController() })
+        ]
+    private lazy var tabsView = UnderlineTabsView(items: tabs.map{ .init(title: $0.title) })
     private let container = UIView()
 
     // Контент
-    private let templatesVC = TemplatesViewController()
-    private let stepsVC = StepsViewController()
     private var current: UIViewController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-
-        setupHeader()
+        TabsHeaderConfigurator.configure(header: header, titleLabel: titleLabel, tabs: tabsView, in: view)
         setupContainer()
 
-        tabs.onSelect = { [weak self] idx in self?.switchTo(idx) }
+        tabsView.onSelect = { [weak self] idx in self?.switchTo(idx) }
         switchTo(0) // стартовая вкладка
     }
 
     // MARK: UI
-
-    private func setupHeader() {
-        // фон шапки + скругление верхних углов
-        header.backgroundColor = UIColor { tc in
-            tc.userInterfaceStyle == .dark
-                ? UIColor(red: 0.08, green: 0.12, blue: 0.17, alpha: 1)
-                : UIColor.systemGroupedBackground
-        }
-        header.layer.cornerRadius = 28
-        header.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        header.layer.masksToBounds = true
-
-        view.addSubview(header)
-        header.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.leading.trailing.equalToSuperview()
-            // низ задаём содержимым
-        }
-
-        titleLabel.text = "Сценарии"
-        titleLabel.font = .systemFont(ofSize: 25, weight: .heavy)
-        titleLabel.textColor = .label
-
-        header.addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.lessThanOrEqualToSuperview().inset(16)
-        }
-
-        header.addSubview(tabs)
-        tabs.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(8)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.lessThanOrEqualToSuperview().inset(16)
-            make.bottom.equalToSuperview().inset(4) // низ шапки = низ вкладок
-        }
-    }
 
     private func setupContainer() {
         view.addSubview(container)
@@ -85,7 +45,7 @@ final class TabsViewController: UIViewController {
     // MARK: Switching
 
     private func switchTo(_ index: Int) {
-        let next = (index == 0) ? templatesVC : stepsVC
+        let next = tabs[index].builder()
         guard next !== current else { return }
 
         current?.willMove(toParent: nil)

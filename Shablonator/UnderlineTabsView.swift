@@ -8,9 +8,8 @@ import UIKit
 import SnapKit
 
 final class UnderlineTabsView: UIView {
-
-    struct Item { let title: String }
-
+    
+    
     // MARK: Public API
     var onSelect: ((Int) -> Void)?
     private(set) var selectedIndex: Int = 0
@@ -83,7 +82,6 @@ final class UnderlineTabsView: UIView {
             b.setTitleColor(i == selectedIndex ? activeColor : inactiveColor, for: .normal)
             b.tag = i
             b.addTarget(self, action: #selector(tap(_:)), for: .touchUpInside)
-            // УБРАНО: управление accessibilityTraits
             buttons.append(b)
             stack.addArrangedSubview(b)
         }
@@ -96,8 +94,6 @@ final class UnderlineTabsView: UIView {
         let old = selectedIndex
         selectedIndex = index
         updateButtonColors()
-
-        // УБРАНО: изменение accessibilityTraits у кнопок
 
         attachUnderline(to: index, animated: animated && window != nil)
 
