@@ -5,94 +5,62 @@
 //  Created by Никита Долгов on 11.09.25.
 //
 
+
 import UIKit
+import SnapKit
 
 enum CardFactory {
-    
+
     static func templateCard(
         title: String,
         stepCount: Int,
-        hasVideo: Bool = false,
+        hasVideo: Bool,
+        isSelected: Bool,
         onTap: @escaping () -> Void,
         onEdit: @escaping () -> Void
-    ) -> UniversalCardView {
+    ) -> UIView {
+
         let card = UniversalCardView()
-        
-        // Leading slot - иконка видео
-        if hasVideo {
-            let videoIcon = UIImageView(image: UIImage(systemName: "video.fill"))
-            videoIcon.tintColor = .systemBlue
-            card.leadingSlot = videoIcon
-        }
-        
-        // Title
         card.titleText = title
-        
-        // Trailing slot - кнопка редактирования
+
+        // Метка с метаданными (шаги/видео)
+        let meta = UILabel()
+        meta.text = "\(stepCount) шагов" + (hasVideo ? " • Видео" : "")
+        meta.textColor = .secondaryLabel
+        meta.font = .systemFont(ofSize: 14)
+        card.contentSlot = meta
+
+        // Правая кнопка «Изменить»
         let editButton = UIButton(type: .system)
-        editButton.setImage(UIImage(systemName: "pencil"), for: .normal)
+        editButton.setImage(UIImage(systemName: "pencil.circle"), for: .normal)
+        editButton.tintColor = .tertiaryLabel
+        editButton.accessibilityLabel = "Изменить"
         editButton.addAction(UIAction { _ in onEdit() }, for: .touchUpInside)
         card.trailingSlot = editButton
-        
-        // Content slot - количество шагов
-        let stepLabel = UILabel()
-        stepLabel.text = "\(stepCount) шагов"
-        stepLabel.font = .systemFont(ofSize: 14)
-        stepLabel.textColor = .secondaryLabel
-        card.contentSlot = stepLabel
-        
-        // Callbacks
+
+        // Визуальные состояния выделения
+        card.layer.cornerRadius = 12
+        card.layer.borderWidth = isSelected ? 2 : 1
+        card.layer.borderColor = (isSelected ? UIColor.systemBlue : UIColor.separator).cgColor
+        card.backgroundColor = isSelected ? UIColor.systemBlue.withAlphaComponent(0.12) : .secondarySystemBackground
+
+        // Основной тап по карточке — выбор
         card.onTap = onTap
-        
         return card
     }
-    
-    static func stepCard(
-        title: String,
-        description: String,
-        isCompleted: Bool = false,
-        onTap: @escaping () -> Void
-    ) -> UniversalCardView {
-        let card = UniversalCardView()
-        
-        // Leading slot - статус
-        let statusIcon = UIImageView(
-            image: UIImage(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
-        )
-        statusIcon.tintColor = isCompleted ? .systemGreen : .systemGray3
-        card.leadingSlot = statusIcon
-        
-        // Title
-        card.titleText = title
-        
-        // Content slot - описание
-        let descLabel = UILabel()
-        descLabel.text = description
-        descLabel.font = .systemFont(ofSize: 14)
-        descLabel.textColor = .secondaryLabel
-        descLabel.numberOfLines = 2
-        card.contentSlot = descLabel
-        
-        card.onTap = onTap
-        
-        return card
-    }
-    
-    static func customCard(
-        title: String,
-        leadingView: UIView? = nil,
-        trailingView: UIView? = nil,
-        contentView: UIView? = nil,
-        footerView: UIView? = nil,
-        onTap: (() -> Void)? = nil
-    ) -> UniversalCardView {
-        let card = UniversalCardView()
-        card.titleText = title
-        card.leadingSlot = leadingView
-        card.trailingSlot = trailingView
-        card.contentSlot = contentView
-        card.footerSlot = footerView
-        card.onTap = onTap
-        return card
+}
+
+
+private enum AssociatedKeys {
+    // был: static var onTap = "onTap"
+    static var onTap: UInt8 = 0 // тривиальный тип, фиксированный адрес
+}
+
+
+extension UIView {
+    @objc func handleTap() {
+        if let onTap = objc_getAssociatedObject(self, &AssociatedKeys.onTap) as? (() -> Void) {
+            onTap()
+        }
     }
 }

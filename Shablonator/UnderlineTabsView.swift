@@ -8,8 +8,7 @@ import UIKit
 import SnapKit
 
 final class UnderlineTabsView: UIView {
-    
-    
+
     // MARK: Public API
     var onSelect: ((Int) -> Void)?
     private(set) var selectedIndex: Int = 0
@@ -37,10 +36,10 @@ final class UnderlineTabsView: UIView {
     private let stack = UIStackView()
     private let underline = UIView()
     private var buttons: [UIButton] = []
-
     private var didAttachInitially = false
 
     // MARK: Init
+    struct Item { let title: String }
     init(items: [Item], initialIndex: Int = 0) {
         super.init(frame: .zero)
         setupBase()
@@ -86,6 +85,8 @@ final class UnderlineTabsView: UIView {
             stack.addArrangedSubview(b)
         }
 
+        updateButtonColors()
+        attachUnderline(to: selectedIndex, animated: false)
         requestLayout()
     }
 
@@ -140,25 +141,23 @@ final class UnderlineTabsView: UIView {
 
     private func attachUnderline(to index: Int, animated: Bool) {
         guard index < buttons.count, let label = buttons[index].titleLabel else { return }
+        // Если лейбл ещё не вымерен, форсируем layout
+        label.superview?.layoutIfNeeded()
+        let width = max(label.intrinsicContentSize.width, 1) // защита от 0/NaN
 
         underline.snp.remakeConstraints { make in
             make.top.equalTo(stack.snp.bottom).offset(6)
             make.bottom.equalToSuperview()
             make.height.equalTo(underlineHeight)
             make.leading.equalTo(label.snp.leading)
-            make.width.equalTo(label.snp.width)
+            make.width.equalTo(width)
         }
 
         let applyLayout = {
             self.setNeedsLayout()
             if self.window != nil { self.layoutIfNeeded() }
         }
-
-        if animated {
-            UIView.animate(withDuration: 0.22, delay: 0, options: .curveEaseInOut, animations: applyLayout)
-        } else {
-            applyLayout()
-        }
+        animated ? UIView.animate(withDuration: 0.22, animations: applyLayout) : applyLayout()
     }
 
     private func requestLayout() {

@@ -9,53 +9,114 @@ import SnapKit
 
 final class TabsViewController: UIViewController {
 
-    // UI
-    private let header = UIView()
+    // MARK: - UI
+    private let headerView = UIView()
     private let titleLabel = UILabel()
-    private let tabs: [Tab] = [
-            .init(title: "Шаблоны", builder: { TemplatesViewController() }),
-            .init(title: "Шаги",     builder: { StepsViewController() })
-        ]
-    private lazy var tabsView = UnderlineTabsView(items: tabs.map{ .init(title: $0.title) })
+    private let tabsView: UnderlineTabsView
     private let container = UIView()
 
-    // Контент
-    private var current: UIViewController?
+    // MARK: - State
+    private var currentChild: UIViewController?
+    private var currentIndex: Int = 0
+    private var selectedTemplateId: Int64?
 
+    // MARK: - Tabs
+    private struct Tab {
+        let title: String
+        let builder: () -> UIViewController
+    }
+
+    private var tabs: [Tab] {
+        [
+            Tab(title: "Шаблоны") { [weak self] in
+                let vc = TemplatesViewController()
+                vc.onSelectTemplate = { [weak self] (template: TemplateRecord) in
+                    self?.selectedTemplateId = template.id
+                    // Если пользователь на вкладке "Шаги", обновим её
+                    if self?.currentIndex == 1 {
+                        self?.switchTo(index: 1)
+                    }
+                }
+                return vc
+            },
+            Tab(title: "Шаги") { [weak self] in
+                if let id = self?.selectedTemplateId {
+                    return StepsViewController(templateId: id)
+                } else {
+                    return PlaceholderViewController(text: "Выберите шаблон во вкладке «Шаблоны»")
+                }
+            }
+        ]
+    }
+
+    // MARK: - Init
+    init() {
+        self.tabsView = UnderlineTabsView(items: [
+            .init(title: "Шаблоны"),
+            .init(title: "Шаги")
+        ])
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        TabsHeaderConfigurator.configure(header: header, titleLabel: titleLabel, tabs: tabsView, in: view)
-        setupContainer()
-
-        tabsView.onSelect = { [weak self] idx in self?.switchTo(idx) }
-        switchTo(0) // стартовая вкладка
+        setupUI()
+        setupTabsCallback()
+        switchTo(index: 0)
     }
 
-    // MARK: UI
+    // MARK: - Setup UI
+    private func setupUI() {
+        // Используем ваш конфигуратор
+        TabsHeaderConfigurator.configure(
+            header: headerView,
+            titleLabel: titleLabel,
+            tabs: tabsView,
+            in: view
+        )
 
-    private func setupContainer() {
+        // Контейнер для контента
         view.addSubview(container)
         container.snp.makeConstraints { make in
-            make.top.equalTo(header.snp.bottom).offset(8)
-            make.leading.trailing.bottom.equalToSuperview()
+            make.top.equalTo(headerView.snp.bottom).offset(16)
+            make.leading.trailing.bottom.equalTo(view.safeAreaLayoutGuide)
         }
     }
 
-    // MARK: Switching
+    private func setupTabsCallback() {
+        tabsView.onSelect = { [weak self] index in
+            self?.switchTo(index: index)
+        }
+    }
 
-    private func switchTo(_ index: Int) {
-        let next = tabs[index].builder()
-        guard next !== current else { return }
+    // MARK: - Tab management
+    private func switchTo(index: Int) {
+        currentIndex = index
+        let newVC = tabs[index].builder()
+        setChild(newVC)
+    }
 
-        current?.willMove(toParent: nil)
-        current?.view.removeFromSuperview()
-        current?.removeFromParent()
+    private func setChild(_ vc: UIViewController) {
+        // Удаляем старый child
+        if let old = currentChild {
+            old.willMove(toParent: nil)
+            old.view.removeFromSuperview()
+            old.removeFromParent()
+        }
 
-        addChild(next)
-        container.addSubview(next.view)
-        next.view.snp.makeConstraints { $0.edges.equalToSuperview() }
-        next.didMove(toParent: self)
-        current = next
+        // Добавляем новый child
+        addChild(vc)
+        container.addSubview(vc.view)
+        vc.view.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        vc.didMove(toParent: self)
+        currentChild = vc
     }
 }

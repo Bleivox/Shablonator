@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D850F7CE2E7C59A3006D4CA2 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D850F7CD2E7C59A3006D4CA2 /* GRDB */; };
 		D89E8DD92E69A66B0032AA6A /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = D89E8DD82E69A66B0032AA6A /* SnapKit */; };
 		D89E8DDB2E69A68E0032AA6A /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = D89E8DDA2E69A68E0032AA6A /* .gitignore */; };
 /* End PBXBuildFile section */
@@ -43,6 +44,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D89E8DD92E69A66B0032AA6A /* SnapKit in Frameworks */,
+				D850F7CE2E7C59A3006D4CA2 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,6 +89,7 @@
 			name = Shablonator;
 			packageProductDependencies = (
 				D89E8DD82E69A66B0032AA6A /* SnapKit */,
+				D850F7CD2E7C59A3006D4CA2 /* GRDB */,
 			);
 			productName = Shablonator;
 			productReference = D8170C092DFDA6F10057593E /* Shablonator.app */;
@@ -118,6 +121,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				D89E8DD72E69A66B0032AA6A /* XCRemoteSwiftPackageReference "SnapKit" */,
+				D850F7CC2E7C59A3006D4CA2 /* XCRemoteSwiftPackageReference "GRDB" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D8170C0A2DFDA6F10057593E /* Products */;
@@ -166,6 +170,7 @@
 				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -194,6 +199,7 @@
 				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -352,6 +358,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		D850F7CC2E7C59A3006D4CA2 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.6.1;
+			};
+		};
 		D89E8DD72E69A66B0032AA6A /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
@@ -363,6 +377,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		D850F7CD2E7C59A3006D4CA2 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D850F7CC2E7C59A3006D4CA2 /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
+		};
 		D89E8DD82E69A66B0032AA6A /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D89E8DD72E69A66B0032AA6A /* XCRemoteSwiftPackageReference "SnapKit" */;
