@@ -55,21 +55,21 @@ final class TemplateRepository {
     }
     
     func createStep(templateId: Int64, title: String, content: String?, kind: String?, sortHint: Int) throws {
-        try dbq.write { db in
-            var step = StepRecord(
-                id: nil,
-                templateId: templateId,
-                title: title,
-                content: content,
-                message: nil,
-                kind: kind,
-                isStart: sortHint == 0, // Первый шаг - стартовый
-                isTerminal: false,
-                sortHint: sortHint
-            )
-            try step.insert(db)
+            try dbq.write { db in
+                var step = StepRecord(
+                    id: nil,
+                    templateId: templateId,
+                    title: title,
+                    content: content,
+                    message: nil,
+                    kind: kind,
+                    isStart: sortHint == 0,
+                    isTerminal: false,
+                    sortHint: sortHint
+                )
+                try step.insert(db)
+            }
         }
-    }
 
 
 

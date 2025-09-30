@@ -175,15 +175,15 @@ final class TemplatesViewController: UIViewController {
     }
 
     private func startBuilder() {
-        let builder = VisualTemplateBuilderViewController()
-        builder.onSave = { [weak self] builderModel in
-            self?.createTemplateFromBuilder(builderModel)
+        // Используем новый объединенный билдер
+        let builder = UnifiedTemplateBuilderViewController()
+        builder.onSave = { [weak self] builderState in
+            self?.createTemplateFromBuilderState(builderState)
         }
         
         let nav = UINavigationController(rootViewController: builder)
         nav.modalPresentationStyle = .fullScreen
         
-        // Добавить кнопку отмены
         builder.navigationItem.leftBarButtonItem = UIBarButtonItem(
             title: "Отмена",
             style: .plain,
@@ -198,18 +198,9 @@ final class TemplatesViewController: UIViewController {
         dismiss(animated: true)
     }
 
-    private func createTemplateFromBuilder(_ model: TemplateBuilderModel) {
-        guard !model.name.isEmpty else { return }
-        
+    private func createTemplateFromBuilderState(_ builderState: BuilderState) {
         do {
-            let templateId = try repo.createTemplate(
-                userId: 1,
-                name: model.name,
-                description: "Создано в конструкторе. Содержит \(model.steps.count) элементов."
-            )
-            
-            // Создать шаги из модели конструктора
-            try createStepsFromBuilder(templateId: templateId, steps: model.steps)
+            let templateId = try repo.createFromBuilder(builderState)
             
             dismiss(animated: true) {
                 self.loadTemplates()

@@ -98,44 +98,9 @@ final class StepPlayerViewController: UIViewController {
     }
     
     private func createStepController(for step: StepRecord) -> UIViewController {
-        let kind = step.kind ?? ""
-        
-        switch kind {
-        case "question":
-            return QuestionStepViewController(step: step, repository: repo) { [weak self] choice in
-                self?.handleStepChoice(choice)
-            }
-        case "branch":
-            return BranchStepViewController(step: step, repository: repo) { [weak self] choice in
-                self?.handleStepChoice(choice)
-            }
-        case "form":
-            guard let stepId = step.id else {
-                return InfoStepViewController(step: step) { [weak self] in self?.moveToNextStep() }
-            }
-            if let vars = try? repo.variables(for: stepId),
-               vars.contains(where: { $0.type == "dateList" }) {
-                return MultiDateStepViewController(step: step, repository: repo) { [weak self] choices in
-                    self?.handleFormChoices(choices)  // choices -> key "dates", value [Date]
-                }
-            } else {
-                return FormStepViewController(step: step, repository: repo) { [weak self] choices in
-                    self?.handleFormChoices(choices)
-                }
-            }
-        case "choice":
-            return ChoiceStepViewController(step: step, repository: repo) { [weak self] choice in
-                self?.handleStepChoice(choice)
-            }
-        case "summary":
-            return SummaryStepViewController(step: step, state: state) { [weak self] in
-                self?.finishScenario()
-            }
-        default:
-            return InfoStepViewController(step: step) { [weak self] in
-                self?.moveToNextStep()
-            }
-        }
+        let stepController = UniversalStepViewController(step: step, repository: repo)
+        stepController.delegate = self
+        return stepController
     }
     
     private func setChildController(_ controller: UIViewController) {
@@ -194,5 +159,20 @@ final class StepPlayerViewController: UIViewController {
         let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+}
+
+extension StepPlayerViewController: StepViewControllerDelegate {
+    func stepDidComplete(_ step: StepRecord, choices: [StepChoice]) {
+        // Сохраняем выборы в state
+        for choice in choices {
+            state.set(key: choice.key, value: choice.value)
+        }
+        moveToNextStep()
+    }
+    
+    func stepDidCancel(_ step: StepRecord) {
+        // Возврат к предыдущему шагу или закрытие
+        delegate?.stepPlayerDidCancel(self)
     }
 }

@@ -44,11 +44,7 @@ final class VisualTemplateBuilderViewController: UIViewController {
         setupDragAndDrop()
         loadBuilderElements()
     }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        updateDashedBorders()
-    }
+
     
     private func setupUI() {
         view.backgroundColor = .systemBackground
@@ -271,6 +267,11 @@ final class VisualTemplateBuilderViewController: UIViewController {
     
     // MARK: - Dashed Border Helper
     private func addDashedBorder(to view: UIView, color: UIColor, width: CGFloat, dashPattern: [NSNumber]) {
+        // Удаляем старый слой если есть
+        if let oldLayer = objc_getAssociatedObject(view, &AssociatedKeys.dashedBorderLayer) as? CAShapeLayer {
+            oldLayer.removeFromSuperlayer()
+        }
+        
         let shapeLayer = CAShapeLayer()
         shapeLayer.strokeColor = color.cgColor
         shapeLayer.lineWidth = width
@@ -281,21 +282,22 @@ final class VisualTemplateBuilderViewController: UIViewController {
         
         view.layer.addSublayer(shapeLayer)
         
-        // Сохраняем ссылку для последующего обновления
+        // Сохраняем ссылку для обновления
         objc_setAssociatedObject(view, &AssociatedKeys.dashedBorderLayer, shapeLayer, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
     
-    private func updateDashedBorders() {
-        // Обновляем границу для centerCanvas
-        if let dashedLayer = objc_getAssociatedObject(centerCanvas, &AssociatedKeys.dashedBorderLayer) as? CAShapeLayer {
-            dashedLayer.frame = centerCanvas.bounds
-            dashedLayer.path = UIBezierPath(roundedRect: centerCanvas.bounds, cornerRadius: centerCanvas.layer.cornerRadius).cgPath
-        }
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
         
-        // Обновляем границу для dropZone если нужно
-        if let dashedLayer = objc_getAssociatedObject(dropZone, &AssociatedKeys.dashedBorderLayer) as? CAShapeLayer {
-            dashedLayer.frame = dropZone.bounds
-            dashedLayer.path = UIBezierPath(roundedRect: dropZone.bounds, cornerRadius: dropZone.layer.cornerRadius).cgPath
+        // Обновляем все пунктирные границы при изменении размеров
+        updateDashedBorder(for: centerCanvas)
+        updateDashedBorder(for: dropZone)
+    }
+    
+    private func updateDashedBorder(for view: UIView) {
+        if let dashedLayer = objc_getAssociatedObject(view, &AssociatedKeys.dashedBorderLayer) as? CAShapeLayer {
+            dashedLayer.frame = view.bounds
+            dashedLayer.path = UIBezierPath(roundedRect: view.bounds, cornerRadius: view.layer.cornerRadius).cgPath
         }
     }
     
@@ -374,10 +376,18 @@ final class VisualTemplateBuilderViewController: UIViewController {
     
     // MARK: - Drag & Drop
     private func setupDragAndDrop() {
-        let dropGesture = UIDropInteraction(delegate: self)
-        centerCanvas.addInteraction(dropGesture)
+        // Добавляем drag для элементов в левой панели
+        elementsStack.arrangedSubviews.enumerated().forEach { index, view in
+            let dragInteraction = UIDragInteraction(delegate: self)
+            view.addInteraction(dragInteraction)
+            view.isUserInteractionEnabled = true
+            view.tag = index + 1 // Соответствует BuilderElementType rawValue
+        }
+        
+        // Добавляем drop для центрального канваса
+        let dropInteraction = UIDropInteraction(delegate: self)
+        centerCanvas.addInteraction(dropInteraction)
     }
-    
     @objc private func handleElementDrag(_ gesture: UIPanGestureRecognizer) {
         let location = gesture.location(in: view)
         
@@ -562,28 +572,6 @@ final class VisualTemplateBuilderViewController: UIViewController {
     }
 }
 
-// MARK: - UIDropInteractionDelegate
-extension VisualTemplateBuilderViewController: UIDropInteractionDelegate {
-    func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
-        return draggedElement != nil
-    }
-    
-    func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
-        return UIDropProposal(operation: .copy)
-    }
-    
-    func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
-        guard let element = draggedElement else { return }
-        
-        let location = session.location(in: canvasContent)
-        addElementToCanvas(element, at: location)
-        updateProgress()
-        generatePreview()
-        
-        draggedElement = nil
-        dropZone.isHidden = true
-    }
-}
 
 // MARK: - Associated Objects Keys
 private enum AssociatedKeys {
@@ -620,6 +608,121 @@ enum BuilderElementType: Int, CaseIterable {
         case .info: return "Информация"
         case .condition: return "Условие"
         case .result: return "Результат"
+        }
+    }
+}
+
+extension VisualTemplateBuilderViewController: UIDragInteractionDelegate {
+    func dragInteraction(_ interaction: UIDragInteraction, itemsForBeginning session: UIDragSession) -> [UIDragItem] {
+        guard let view = interaction.view,
+              let elementType = BuilderElementType(rawValue: view.tag) else {
+            return []
+        }
+        
+        // Создаем элемент для перетаскивания
+        let element = BuilderElement(
+            type: elementType,
+            title: elementType.displayName,
+            subtitle: "",
+            icon: ""
+        )
+        
+        // Создаем NSItemProvider
+        let itemProvider = NSItemProvider(object: NSString(string: element.type.displayName))
+        let dragItem = UIDragItem(itemProvider: itemProvider)
+        dragItem.localObject = element
+        
+        return [dragItem]
+    }
+    
+    func dragInteraction(_ interaction: UIDragInteraction, previewForLifting item: UIDragItem, session: UIDragSession) -> UITargetedDragPreview? {
+        guard let view = interaction.view else { return nil }
+        
+        // Создаем превью для drag
+        let previewView = createDragPreview(for: view)
+        let previewTarget = UIDragPreviewTarget(container: view, center: view.center)
+        
+        return UITargetedDragPreview(view: previewView, parameters: UIDragPreviewParameters(), target: previewTarget)
+    }
+    
+    private func createDragPreview(for view: UIView) -> UIView {
+        let previewView = UIView()
+        previewView.frame = CGRect(x: 0, y: 0, width: 80, height: 80)
+        previewView.backgroundColor = DesignSystem.primaryColor.withAlphaComponent(0.8)
+        previewView.layer.cornerRadius = 8
+        
+        let label = UILabel()
+        label.text = "📋"
+        label.font = UIFont.systemFont(ofSize: 24)
+        label.textAlignment = .center
+        label.frame = previewView.bounds
+        
+        previewView.addSubview(label)
+        return previewView
+    }
+}
+
+// MARK: - UIDropInteractionDelegate
+extension VisualTemplateBuilderViewController: UIDropInteractionDelegate {
+    func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
+        // Принимаем только локальные объекты (drag из этого же приложения)
+        return session.localDragSession != nil
+    }
+    
+    func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
+        let location = session.location(in: centerCanvas)
+        let canvasFrame = centerCanvas.bounds
+        
+        // Показываем drop зону только если курсор в области канваса
+        if canvasFrame.contains(location) {
+            showDropZone(at: location)
+            return UIDropProposal(operation: .copy)
+        } else {
+            hideDropZone()
+            return UIDropProposal(operation: .forbidden)
+        }
+    }
+    
+    func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
+        guard let dragItem = session.items.first,
+              let element = dragItem.localObject as? BuilderElement else {
+            return
+        }
+        
+        let location = session.location(in: canvasContent)
+        addElementToCanvas(element, at: location)
+        updateProgress()
+        generatePreview()
+        hideDropZone()
+    }
+    
+    func dropInteraction(_ interaction: UIDropInteraction, sessionDidExit session: UIDropSession) {
+        hideDropZone()
+    }
+    
+    func dropInteraction(_ interaction: UIDropInteraction, sessionDidEnd session: UIDropSession) {
+        hideDropZone()
+    }
+    
+    // MARK: - Drop Zone Helpers
+    private func showDropZone(at location: CGPoint) {
+        dropZone.isHidden = false
+        dropZone.backgroundColor = DesignSystem.primaryColor.withAlphaComponent(0.2)
+        
+        // Анимация появления
+        if dropZone.alpha == 0 {
+            UIView.animate(withDuration: 0.2) {
+                self.dropZone.alpha = 1
+            }
+        }
+    }
+    
+    private func hideDropZone() {
+        UIView.animate(withDuration: 0.2, animations: {
+            self.dropZone.alpha = 0
+        }) { _ in
+            self.dropZone.isHidden = true
+            self.dropZone.backgroundColor = UIColor.systemGray6.withAlphaComponent(0.5)
         }
     }
 }
