@@ -14,7 +14,7 @@ final class TabsViewController: UIViewController {
     private let titleLabel = UILabel()
     private let tabs: [Tab] = [
             .init(title: "Шаблоны", builder: { TemplatesViewController() }),
-            .init(title: "Шаги",     builder: { StepsViewController() })
+            .init(title: "Медиатека",     builder: { StepViewController() })
         ]
     private lazy var tabsView = UnderlineTabsView(items: tabs.map{ .init(title: $0.title) })
     private let container = UIView()
